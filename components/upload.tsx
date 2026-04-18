@@ -181,8 +181,11 @@ export function UploadZone({ onSubmitText, disabled = false }: UploadZoneProps) 
           <fieldset className="mb-4 grid grid-cols-1 gap-3 sm:mb-5 sm:grid-cols-[110px_1fr]">
             <legend className="sr-only">Patient context (optional)</legend>
             <div>
-              <label className="block text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="patient-age">
-                Age
+              <label className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="patient-age">
+                <span>Age</span>
+                <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-slate-600">
+                  Optional
+                </span>
               </label>
               <input
                 id="patient-age"
@@ -198,7 +201,12 @@ export function UploadZone({ onSubmitText, disabled = false }: UploadZoneProps) 
               />
             </div>
             <div>
-              <span className="block text-xs font-medium uppercase tracking-wide text-slate-500">Gender</span>
+              <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                <span>Gender</span>
+                <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium normal-case tracking-normal text-slate-600">
+                  Optional
+                </span>
+              </span>
               <div role="radiogroup" aria-label="Gender" className="mt-1 flex flex-wrap gap-2">
                 {([
                   { value: "female", label: "Female" },
@@ -227,7 +235,7 @@ export function UploadZone({ onSubmitText, disabled = false }: UploadZoneProps) 
               </div>
             </div>
             <p className="col-span-full text-xs text-slate-500">
-              Optional. Adding these helps tailor reference ranges (for example, hemoglobin targets differ by sex).
+              You can analyze your report without filling these in. Adding them only helps tailor reference ranges (for example, hemoglobin targets differ by sex).
             </p>
           </fieldset>
 

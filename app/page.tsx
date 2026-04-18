@@ -18,16 +18,20 @@ export default function Home() {
     setErrorMessage(null);
 
     try {
+      const body: Record<string, unknown> = { reportText };
+      if (typeof context?.age === "number") {
+        body.age = context.age;
+      }
+      if (context?.gender) {
+        body.gender = context.gender;
+      }
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          reportText,
-          age: context?.age,
-          gender: context?.gender,
-        }),
+        body: JSON.stringify(body),
       });
 
       const payload = (await response.json()) as AnalyzeResponse;
