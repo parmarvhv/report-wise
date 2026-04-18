@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Results } from "@/components/results";
 import { AnalysisStatus } from "@/components/status";
 import { UploadZone } from "@/components/upload";
-import type { AnalysisResult, AnalyzeResponse } from "@/lib/types";
+import type { AnalysisResult, AnalyzeResponse, PatientContext } from "@/lib/types";
 
 type ViewState = "upload" | "analyzing" | "results" | "error";
 
@@ -13,7 +13,7 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  async function handleAnalyze(reportText: string) {
+  async function handleAnalyze(reportText: string, context?: PatientContext) {
     setViewState("analyzing");
     setErrorMessage(null);
 
@@ -23,7 +23,11 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ reportText }),
+        body: JSON.stringify({
+          reportText,
+          age: context?.age,
+          gender: context?.gender,
+        }),
       });
 
       const payload = (await response.json()) as AnalyzeResponse;
@@ -51,16 +55,16 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(6,182,212,0.18),_transparent_34%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_38%,_#f4efe8_100%)] px-4 py-8 text-slate-950 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(6,182,212,0.18),_transparent_34%),linear-gradient(180deg,_#f8fbff_0%,_#eef6ff_38%,_#f4efe8_100%)] px-4 py-6 text-slate-950 sm:px-6 sm:py-8 lg:px-8">
       <div className="mx-auto w-full max-w-6xl">
-        <header className="px-1 py-8 sm:py-12">
+        <header className="px-1 py-6 sm:py-10 lg:py-12">
           <div className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-medium uppercase tracking-[0.28em] text-slate-500">
             ReportWise MVP
           </div>
-          <h1 className="mt-5 max-w-4xl text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
+          <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight text-balance text-slate-950 sm:mt-5 sm:text-5xl lg:text-6xl">
             Understand lab reports without getting buried in numbers and jargon.
           </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+          <p className="mt-4 max-w-2xl text-base leading-7 text-pretty text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
             Paste your report text and get a structured explanation with clear risk
             cues, plain-language summaries, and next-step guidance.
           </p>

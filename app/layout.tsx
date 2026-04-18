@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ReportWise",
-  description: "Patient-friendly lab report interpretation for the ReportWise MVP.",
+  title: "ReportWise - Understand Your Lab Reports",
+  description: "Patient-friendly lab report interpretation. Paste your report text and get a structured explanation with clear risk cues, plain-language summaries, and next-step guidance.",
+};
+
+export const viewport = {
+  themeColor: "#f8fbff",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
