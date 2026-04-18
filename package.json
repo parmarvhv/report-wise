@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.90.0",
+    "@ai-sdk/groq": "^3.0.35",
+    "ai": "^6.0.168",
     "lucide-react": "^1.8.0",
     "next": "16.2.4",
+    "pdfjs-dist": "^4.8.69",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^15.0.0",

@@ -10,7 +10,22 @@ export const labTestSchema = z.object({
   normalRange: z.string().optional(),
   risk: labRiskSchema,
   explanation: z.string().min(1),
+  improvement: z.string().optional(),
+  seeDoctor: z.string().optional(),
+  // Numeric fields used by the per-test range chart. Optional so qualitative
+  // tests (e.g., "positive / negative") still render without a chart.
+  numericValue: z.number().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
 });
+
+export const genderSchema = z.enum(["female", "male", "other"]);
+export type Gender = z.infer<typeof genderSchema>;
+
+export type PatientContext = {
+  age?: number;
+  gender?: Gender;
+};
 
 export const analysisResultSchema = z.object({
   summary: z.string().min(1),

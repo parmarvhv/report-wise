@@ -1,8 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { generateText } from "ai";
+import { groq } from "@ai-sdk/groq";
 import { demoResult } from "@/lib/fixtures";
 import { parseAnalysisResponse } from "@/lib/parse";
-import { ANALYSIS_PROMPT } from "@/lib/prompt";
-import type { AnalyzeResponse } from "@/lib/types";
+import { buildAnalysisPrompt } from "@/lib/prompt";
+import { genderSchema, type AnalyzeResponse, type Gender } from "@/lib/types";
 
 const inputLimit = 12000;
 
@@ -12,9 +13,24 @@ function jsonResponse(body: AnalyzeResponse, status = 200) {
 
 export async function POST(request: Request) {
   try {
-    const payload = (await request.json()) as { reportText?: unknown };
+    const payload = (await request.json()) as {
+      reportText?: unknown;
+      age?: unknown;
+      gender?: unknown;
+    };
     const reportText =
       typeof payload.reportText === "string" ? payload.reportText.trim() : "";
+
+    let age: number | undefined;
+    if (typeof payload.age === "number" && Number.isFinite(payload.age) && payload.age > 0 && payload.age < 130) {
+      age = Math.round(payload.age);
+    }
+
+    let gender: Gender | undefined;
+    const genderParse = genderSchema.safeParse(payload.gender);
+    if (genderParse.success) {
+      gender = genderParse.data;
+    }
 
     if (!reportText) {
       return jsonResponse(
@@ -47,33 +63,25 @@ export async function POST(request: Request) {
       return jsonResponse({ ok: true, data: demoResult });
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
+    if (!process.env.GROQ_API_KEY) {
       return jsonResponse(
         {
           ok: false,
           error:
-            "ANTHROPIC_API_KEY is not configured. Set it or enable MOCK_ANALYSIS=true for demo mode.",
+            "GROQ_API_KEY is not configured. Add it in project settings or enable MOCK_ANALYSIS=true for demo mode.",
         },
         500,
       );
     }
 
-    const client = new Anthropic({ apiKey });
-    const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-    const message = await client.messages.create({
-      model,
-      max_tokens: 1800,
-      messages: [
-        {
-          role: "user",
-          content: ANALYSIS_PROMPT.replace("{REPORT_TEXT}", reportText),
-        },
-      ],
+    // Use Groq with a free API key (generous free tier, no credit card required)
+    const { text } = await generateText({
+      model: groq("llama-3.3-70b-versatile"),
+      prompt: buildAnalysisPrompt(reportText, { age, gender }),
+      maxOutputTokens: 1800,
     });
 
-    const firstBlock = message.content.find((block) => block.type === "text");
-    if (!firstBlock || firstBlock.type !== "text") {
+    if (!text) {
       return jsonResponse(
         {
           ok: false,
@@ -83,7 +91,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = parseAnalysisResponse(firstBlock.text);
+    const result = parseAnalysisResponse(text);
     return jsonResponse({ ok: true, data: result });
   } catch (error) {
     console.error("analyze route failed", error);
@@ -92,7 +100,7 @@ export async function POST(request: Request) {
       {
         ok: false,
         error:
-          "Analysis failed. Try pasting report text again or switch to mock mode while configuring the AI key.",
+          "Analysis failed. Please try again in a moment.",
       },
       500,
     );
