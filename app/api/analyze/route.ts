@@ -75,13 +75,27 @@ export async function POST(request: Request) {
     }
 
     // Use Groq with a free API key (generous free tier, no credit card required)
-    const { text } = await generateText({
-      model: groq("llama-3.3-70b-versatile"),
-      prompt: buildAnalysisPrompt(reportText, { age, gender }),
-      maxOutputTokens: 1800,
-    });
+    let aiText: string;
+    try {
+      const { text } = await generateText({
+        model: groq("llama-3.3-70b-versatile"),
+        prompt: buildAnalysisPrompt(reportText, { age, gender }),
+        maxOutputTokens: 1800,
+      });
+      aiText = text;
+    } catch (error) {
+      console.error("[v0] Groq request failed:", error);
+      const detail = error instanceof Error ? error.message : String(error);
+      return jsonResponse(
+        {
+          ok: false,
+          error: `Upstream AI request failed: ${detail}`,
+        },
+        502,
+      );
+    }
 
-    if (!text) {
+    if (!aiText) {
       return jsonResponse(
         {
           ok: false,
@@ -91,16 +105,28 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = parseAnalysisResponse(text);
-    return jsonResponse({ ok: true, data: result });
+    try {
+      const result = parseAnalysisResponse(aiText);
+      return jsonResponse({ ok: true, data: result });
+    } catch (error) {
+      console.error("[v0] Failed to parse AI response:", error);
+      console.error("[v0] Raw AI output was:", aiText);
+      const detail = error instanceof Error ? error.message : String(error);
+      return jsonResponse(
+        {
+          ok: false,
+          error: `Could not parse the AI response. ${detail}`,
+        },
+        502,
+      );
+    }
   } catch (error) {
-    console.error("analyze route failed", error);
-
+    console.error("[v0] analyze route failed:", error);
+    const detail = error instanceof Error ? error.message : String(error);
     return jsonResponse(
       {
         ok: false,
-        error:
-          "Analysis failed. Please try again in a moment.",
+        error: `Analysis failed: ${detail}`,
       },
       500,
     );
